@@ -1,0 +1,51 @@
+/* Design tokens. Switching [data-theme] on <html> re-colours the whole app. */
+:root,
+:root[data-theme='light'] {
+  --bg: #f6f3ee;
+  --surface: #ffffff;
+  --surface-2: #f2eee8;
+  --border: #e6e0d7;
+  --text: #211e1a;
+  --muted: #756e64;
+  --primary: #0f766e;
+  --primary-hover: #0b5f58;
+  --primary-contrast: #ffffff;
+  --primary-soft: #e0f1ee;
+  --income: #15803d;
+  --income-soft: #e3f4e8;
+  --expense: #d64545;
+  --expense-hover: #bd3535;
+  --expense-soft: #fbe7e5;
+  --warning-soft: #fdf1dc;
+  --shadow: 0 1px 2px rgba(33, 30, 26, 0.04), 0 4px 14px rgba(33, 30, 26, 0.05);
+  --shadow-lg: 0 24px 60px rgba(33, 30, 26, 0.22);
+  --overlay: rgba(33, 30, 26, 0.45);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --focus: 0 0 0 3px rgba(15, 118, 110, 0.35);
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #141311;
+  --surface: #1d1b18;
+  --surface-2: #27241f;
+  --border: #38342d;
+  --text: #f3efe8;
+  --muted: #a39b8e;
+  --primary: #2dd4bf;
+  --primary-hover: #5eead4;
+  --primary-contrast: #06201c;
+  --primary-soft: #12332f;
+  --income: #4ade80;
+  --income-soft: #15301f;
+  --expense: #f87171;
+  --expense-hover: #fca5a5;
+  --expense-soft: #3a1d1d;
+  --warning-soft: #3a2f17;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.6);
+  --overlay: rgba(0, 0, 0, 0.62);
+  --focus: 0 0 0 3px rgba(45, 212, 191, 0.4);
+  color-scheme: dark;
+}

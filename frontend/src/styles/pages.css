@@ -1,0 +1,26 @@
+/* ---- categories ---- */
+.category-form { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.category-form .form-row:not(.grow) { width: 160px; }
+.category-form-error { width: 100%; }
+.category-list li { display: flex; align-items: center; gap: 12px; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); min-height: 58px; }
+.category-list li:last-child { border-bottom: 0; }
+.category-list .category-badge { flex: 1; }
+.category-edit { display: flex; align-items: center; gap: 8px; width: 100%; }
+.category-edit .input { flex: 1; min-width: 0; min-height: 38px; }
+
+@media (max-width: 560px) {
+  .category-form { flex-direction: column; align-items: stretch; }
+  .category-form .form-row:not(.grow) { width: 100%; }
+  .category-list li .muted.small { display: none; }
+}
+
+/* ---- settings ---- */
+.settings-stack { display: flex; flex-direction: column; gap: 16px; max-width: 640px; }
+.profile-row { display: flex; align-items: center; gap: 18px; }
+.profile-fields { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.profile-fields dt { color: var(--muted); font-size: 0.82rem; }
+.profile-fields dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.theme-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.theme-option { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; border: 2px solid var(--border); border-radius: 14px; background: var(--surface); font-weight: 600; }
+.theme-option:hover { border-color: var(--muted); }
+.theme-option.active { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
