@@ -13,4 +13,9 @@ module.exports = {
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   clientUrls: (process.env.CLIENT_URL || 'http://localhost:5173').split(',').map((u) => u.trim()),
+  // AI / Gemini
+  geminiApiKey: process.env.GEMINI_API_KEY || '',
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+  currency: process.env.CURRENCY || 'INR',
+  currencySymbol: process.env.CURRENCY_SYMBOL || '₹',
 };

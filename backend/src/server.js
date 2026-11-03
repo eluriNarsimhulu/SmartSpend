@@ -15,6 +15,7 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/transactions', require('./routes/transactionRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
+app.use('/api/ai/conversations', require('./routes/aiChatRoutes'));
 
 app.use(notFound);
 app.use(errorHandler);

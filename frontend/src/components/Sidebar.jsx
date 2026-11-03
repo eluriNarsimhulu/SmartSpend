@@ -8,6 +8,7 @@ export const NAV_ITEMS = [
   { to: '/transactions', label: 'Transactions', icon: 'transactions' },
   { to: '/analytics', label: 'Analytics', icon: 'analytics' },
   { to: '/categories', label: 'Categories', icon: 'tag' },
+  { to: '/ai-chat', label: 'SmartSpend AI', icon: 'sparkles' },
   { to: '/settings', label: 'Settings', icon: 'settings' },
 ];
 
