@@ -12,11 +12,15 @@ module.exports = {
   databaseSsl: process.env.DATABASE_SSL === 'true',
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  clientUrls: (process.env.CLIENT_URL || 'http://localhost:5173').split(',').map((u) => u.trim()),
-  // AI / Gemini
+  clientUrls: (process.env.CLIENT_URL || 'http://localhost:5173')
+    .split(',')
+    .map((u) => u.trim()),
+
   geminiApiKey: process.env.GEMINI_API_KEY || '',
-  geminiModel: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
-  geminiFallbackModel: process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash',
+  geminiModel: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  geminiFallbackModel: process.env.GEMINI_FALLBACK_MODEL || '',
   currency: process.env.CURRENCY || 'INR',
   currencySymbol: process.env.CURRENCY_SYMBOL || '₹',
+
+  appTimezone: process.env.APP_TIMEZONE || 'Asia/Kolkata',
 };
