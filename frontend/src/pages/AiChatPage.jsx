@@ -155,11 +155,34 @@ function TypingIndicator() {
 }
 
 // ── Message bubble ─────────────────────────────────────────────────────────────
-function MessageBubble({ message }) {
+function MessageBubble({ message, onRetry }) {
   const isUser = message.role === 'user';
+  const isError = Boolean(message.isError);
   const time = message.created_at
     ? new Date(message.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
     : '';
+
+  if (isError) {
+    return (
+      <div className="ai-message assistant-msg">
+        <div className="ai-bubble ai-bubble-error">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--expense)' }}>
+            <Icon name="alert" size={16} />
+            <span>{message.content}</span>
+          </div>
+          {onRetry && message.retryText && (
+            <button
+              className="btn btn-outline btn-sm"
+              style={{ marginTop: '6px', alignSelf: 'flex-start' }}
+              onClick={() => onRetry(message.retryText, message.id)}
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`ai-message ${isUser ? 'user-msg' : 'assistant-msg'}`}>
@@ -302,6 +325,7 @@ export default function AiChatPage() {
 
   // Delete confirm
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Track active conversation ID in a ref to prevent stale closure issues
   const activeConvIdRef = useRef(activeConvId);
@@ -372,12 +396,16 @@ export default function AiChatPage() {
   }, [toast]);
 
   // ── Send message ──────────────────────────────────────────────────────────
-  const sendMessage = useCallback(async (text) => {
+  const sendMessage = useCallback(async (text, options = {}) => {
     const trimmed = (text || input).trim();
     if (!trimmed || streaming) return;
     if (trimmed.length > 4000) {
       toast.error('Message is too long (max 4000 characters).');
       return;
+    }
+
+    if (options.errorIdToReplace) {
+      setMessages((prev) => prev.filter((m) => m.id !== options.errorIdToReplace));
     }
 
     setInput('');
@@ -389,13 +417,16 @@ export default function AiChatPage() {
       if (!convId) return;
     }
 
-    const userMsg = {
-      id: `tmp-${Date.now()}`,
-      role: 'user',
-      content: trimmed,
-      created_at: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, userMsg]);
+    // Only add to state if not retrying an already displayed message
+    if (!options.isRetry) {
+      const userMsg = {
+        id: `tmp-${Date.now()}`,
+        role: 'user',
+        content: trimmed,
+        created_at: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, userMsg]);
+    }
 
     setStreaming(true);
     setStreamingText('');
@@ -405,37 +436,50 @@ export default function AiChatPage() {
 
     let fullText = '';
 
-    await sendMessageStream(convId, trimmed, controller.signal, {
-      onStart: () => {},
-      onDelta: (chunk) => {
-        // Only update if we're still on the same conversation
-        if (activeConvIdRef.current !== convId) return;
-        fullText += chunk;
-        setStreamingText(fullText);
+    await sendMessageStream(
+      convId,
+      trimmed,
+      controller.signal,
+      {
+        onStart: () => {},
+        onDelta: (chunk) => {
+          // Only update if we're still on the same conversation
+          if (activeConvIdRef.current !== convId) return;
+          fullText += chunk;
+          setStreamingText(fullText);
+        },
+        onDone: () => {
+          if (activeConvIdRef.current !== convId) return;
+          const assistantMsg = {
+            id: `tmp-asst-${Date.now()}`,
+            role: 'assistant',
+            content: fullText,
+            created_at: new Date().toISOString(),
+          };
+          setMessages((prev) => [...prev, assistantMsg]);
+          setStreamingText('');
+          setStreaming(false);
+          // Refresh conversation list to get updated title and updated_at
+          loadConversations();
+        },
+        onError: (msg) => {
+          if (activeConvIdRef.current !== convId) return;
+          setStreamingText('');
+          setStreaming(false);
+          toast.error(msg || 'SmartSpend AI encountered an error.');
+          // KEEP user message in state, add an assistant error notice with a Retry option
+          const errorMsg = {
+            id: `err-${Date.now()}`,
+            role: 'assistant',
+            isError: true,
+            content: msg || 'Generation failed. Please try again.',
+            retryText: trimmed,
+          };
+          setMessages((prev) => [...prev, errorMsg]);
+        },
       },
-      onDone: () => {
-        if (activeConvIdRef.current !== convId) return;
-        const assistantMsg = {
-          id: `tmp-asst-${Date.now()}`,
-          role: 'assistant',
-          content: fullText,
-          created_at: new Date().toISOString(),
-        };
-        setMessages((prev) => [...prev, assistantMsg]);
-        setStreamingText('');
-        setStreaming(false);
-        // Refresh conversation list to get updated title and updated_at
-        loadConversations();
-      },
-      onError: (msg) => {
-        if (activeConvIdRef.current !== convId) return;
-        setStreamingText('');
-        setStreaming(false);
-        toast.error(msg || 'SmartSpend AI encountered an error.');
-        // Remove the user message if the AI failed
-        setMessages((prev) => prev.filter((m) => m.id !== userMsg.id));
-      },
-    });
+      { isRetry: Boolean(options.isRetry) }
+    );
 
     // Ensure we reset streaming state even if callbacks didn't fire
     setStreaming((s) => {
@@ -467,7 +511,7 @@ export default function AiChatPage() {
   const handleDeleteConfirm = useCallback(async () => {
     if (!deleteTarget) return;
     const id = deleteTarget.id;
-    setDeleteTarget(null);
+    setDeleteLoading(true);
     try {
       await aiService.deleteConversation(id);
       setConversations((prev) => prev.filter((c) => c.id !== id));
@@ -475,9 +519,12 @@ export default function AiChatPage() {
         setActiveConvId(null);
         setMessages([]);
       }
+      setDeleteTarget(null);
       toast.success('Conversation deleted.');
     } catch (_) {
       toast.error('Could not delete conversation.');
+    } finally {
+      setDeleteLoading(false);
     }
   }, [deleteTarget, activeConvId, toast]);
 
@@ -598,7 +645,13 @@ export default function AiChatPage() {
                 <WelcomeScreen onSuggestion={handleSuggestion} />
               )}
               {messages.map((msg) => (
-                <MessageBubble key={msg.id} message={msg} />
+                <MessageBubble
+                  key={msg.id}
+                  message={msg}
+                  onRetry={(retryText, errId) =>
+                    sendMessage(retryText, { isRetry: true, errorIdToReplace: errId })
+                  }
+                />
               ))}
               {/* Streaming bubble */}
               {streaming && streamingText && (
@@ -660,12 +713,13 @@ export default function AiChatPage() {
       {/* Delete confirm modal */}
       {deleteTarget && (
         <ConfirmModal
+          open={Boolean(deleteTarget)}
           title="Delete Conversation"
           message={`Are you sure you want to delete "${deleteTarget.title}"? This cannot be undone.`}
           confirmLabel="Delete"
-          danger
+          loading={deleteLoading}
           onConfirm={handleDeleteConfirm}
-          onCancel={() => setDeleteTarget(null)}
+          onCancel={() => !deleteLoading && setDeleteTarget(null)}
         />
       )}
     </div>

@@ -16,6 +16,7 @@ module.exports = {
   // AI / Gemini
   geminiApiKey: process.env.GEMINI_API_KEY || '',
   geminiModel: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+  geminiFallbackModel: process.env.GEMINI_FALLBACK_MODEL || 'gemini-2.5-flash',
   currency: process.env.CURRENCY || 'INR',
   currencySymbol: process.env.CURRENCY_SYMBOL || '₹',
 };

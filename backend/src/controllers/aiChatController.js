@@ -72,8 +72,19 @@ const sendMessage = asyncHandler(async (req, res) => {
   const convo = await conversationService.getConversation(conversationId, userId);
   if (!convo) throw new HttpError(404, 'Conversation not found.');
 
-  // ── Save user message ────────────────────────────────────────────────────
-  const userMsg = await conversationService.saveMessage(conversationId, 'user', userText);
+  // ── Save user message (with retry deduplication) ──────────────────────────
+  let userMsg;
+  if (req.body.isRetry) {
+    const lastMsgs = await conversationService.getRecentMessages(conversationId);
+    const last = lastMsgs[lastMsgs.length - 1];
+    if (last && last.role === 'user' && last.content === userText) {
+      userMsg = last;
+    } else {
+      userMsg = await conversationService.saveMessage(conversationId, 'user', userText);
+    }
+  } else {
+    userMsg = await conversationService.saveMessage(conversationId, 'user', userText);
+  }
 
   // ── Set SSE headers ───────────────────────────────────────────────────────
   res.setHeader('Content-Type', 'text/event-stream');
@@ -93,6 +104,7 @@ const sendMessage = asyncHandler(async (req, res) => {
   let assistantText = '';
   try {
     assistantText = await geminiService.streamChatResponse({
+      req,
       res,
       userId,
       userMessage: userText,

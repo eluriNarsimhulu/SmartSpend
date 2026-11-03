@@ -282,6 +282,15 @@
   color: var(--text);
 }
 
+.ai-bubble-error {
+  border: 1px solid var(--expense) !important;
+  background: var(--expense-soft) !important;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .ai-msg-time {
   font-size: 0.72rem;
   color: var(--muted);

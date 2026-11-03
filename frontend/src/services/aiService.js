@@ -40,7 +40,7 @@ export const aiService = {
  *   onDone(messageId, conversationId)
  *   onError(errorMessage)
  */
-export async function sendMessageStream(conversationId, message, signal, callbacks = {}) {
+export async function sendMessageStream(conversationId, message, signal, callbacks = {}, options = {}) {
   const { onStart, onDelta, onDone, onError } = callbacks;
 
   const token = tokenStorage.get();
@@ -55,7 +55,7 @@ export async function sendMessageStream(conversationId, message, signal, callbac
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, isRetry: Boolean(options.isRetry) }),
       signal,
     });
   } catch (err) {
