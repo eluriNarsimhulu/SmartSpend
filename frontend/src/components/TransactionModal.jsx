@@ -359,8 +359,29 @@ export default function TransactionModal({ open, transaction, onClose, onSaved }
       const normalise = (value) =>
         String(value || '').trim().toLowerCase();
 
+      // const matchedCategory = matchingCategories.find(
+      //   (category) => normalise(category.name) === normalise(suggested.category)
+      // );
+      const categoryAliases = {
+        groceries: 'Food',
+        grocery: 'Food',
+        restaurant: 'Food',
+        dining: 'Food',
+        food: 'Food',
+        transportation: 'Transport',
+        travel: 'Transport',
+        medical: 'Health',
+        medicine: 'Health',
+      };
+
+      const suggestedCategory = normalise(suggested.category);
+
+      const categoryToMatch =
+        categoryAliases[suggestedCategory] || suggested.category;
+
       const matchedCategory = matchingCategories.find(
-        (category) => normalise(category.name) === normalise(suggested.category)
+        (category) =>
+          normalise(category.name) === normalise(categoryToMatch)
       );
 
       // Map common spoken payment app names to the application's allowed methods.
@@ -660,7 +681,7 @@ export default function TransactionModal({ open, transaction, onClose, onSaved }
             <p style={voiceHintStyle}>
               Privacy: Your browser may process audio through its speech
               recognition service. Only the recognized text is sent to
-              SmartSpend's Gemini extraction endpoint.
+              SmartSpend's AI extraction endpoint.
             </p>
           </section>
         )}
