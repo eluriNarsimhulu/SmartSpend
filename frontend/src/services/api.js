@@ -8,40 +8,60 @@ export const tokenStorage = {
   clear: () => localStorage.removeItem(TOKEN_KEY),
 };
 
-// One shared Axios instance for the whole app.
+// VITE_API_URL must contain the backend origin only.
+// Example: https://smartspend-backend-9s52.onrender.com
+const API_BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL.replace(/\/+$/, '')}/api`
+  : '/api';
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: API_BASE_URL,
   timeout: 20000,
 });
 
-// Attach the JWT to every request.
 api.interceptors.request.use((config) => {
   const token = tokenStorage.get();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
   return config;
 });
 
-// If the token expired/invalid, drop it and tell the app to log out.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const isLoginCall = error.config?.url?.includes('/auth/login') || error.config?.url?.includes('/auth/register');
-    if (error.response?.status === 401 && tokenStorage.get() && !isLoginCall) {
+    const isLoginCall =
+      error.config?.url?.includes('/auth/login') ||
+      error.config?.url?.includes('/auth/register');
+
+    if (
+      error.response?.status === 401 &&
+      tokenStorage.get() &&
+      !isLoginCall
+    ) {
       tokenStorage.clear();
       window.dispatchEvent(new Event('auth:logout'));
     }
+
     return Promise.reject(error);
   }
 );
 
-// Turns any Axios error into a message that is safe to show to the user.
 export function getErrorMessage(error, fallback = 'Something went wrong.') {
-  if (error?.response?.data?.message) return error.response.data.message;
-  if (error?.code === 'ERR_NETWORK') return 'Cannot reach the server. Check that the backend is running.';
+  if (error?.response?.data?.message) {
+    return error.response.data.message;
+  }
+
+  if (error?.code === 'ERR_NETWORK') {
+    return 'Cannot reach the server. Check that the backend is running.';
+  }
+
   return fallback;
 }
 
-// Field-level errors from the API: { email: '...', password: '...' }
-export const getFieldErrors = (error) => error?.response?.data?.errors || {};
+export const getFieldErrors = (error) =>
+  error?.response?.data?.errors || {};
 
 export default api;
