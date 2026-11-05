@@ -1,9 +1,14 @@
+
 import { Navigate, Route, Routes } from 'react-router-dom';
+
 import AppLayout from './layouts/AppLayout';
 import LoadingState from './components/LoadingState';
 import { useAuth } from './context/AuthContext';
+
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+
 import DashboardPage from './pages/DashboardPage';
 import TransactionsPage from './pages/TransactionsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
@@ -11,27 +16,67 @@ import CategoriesPage from './pages/CategoriesPage';
 import SettingsPage from './pages/SettingsPage';
 import AiChatPage from './pages/AiChatPage';
 
-// Not logged in -> /login
+// Protect application pages.
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return <LoadingState text="Loading your account…" />;
+
+  if (loading) {
+    return <LoadingState text="Loading your account…" />;
+  }
+
   return user ? children : <Navigate to="/login" replace />;
 }
 
-// Already logged in -> /dashboard (login/register pages are for guests only)
+// Redirect authenticated users away from public pages.
 function PublicRoute({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return <LoadingState text="Loading…" />;
+
+  if (loading) {
+    return <LoadingState text="Loading…" />;
+  }
+
   return user ? <Navigate to="/dashboard" replace /> : children;
 }
 
 export default function App() {
   return (
     <Routes>
-      <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-      <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+      {/* Public welcome and authentication pages */}
+      <Route
+        path="/"
+        element={
+          <PublicRoute>
+            <LandingPage />
+          </PublicRoute>
+        }
+      />
 
-      <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <LoginPage />
+          </PublicRoute>
+        }
+      />
+
+      <Route
+        path="/register"
+        element={
+          <PublicRoute>
+            <RegisterPage />
+          </PublicRoute>
+        }
+      />
+
+      {/* Protected application */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/transactions" element={<TransactionsPage />} />
         <Route path="/analytics" element={<AnalyticsPage />} />
@@ -40,8 +85,8 @@ export default function App() {
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* Unknown URLs */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
