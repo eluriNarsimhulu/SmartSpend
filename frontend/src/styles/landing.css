@@ -742,3 +742,53 @@ html.anim.go .landing-caption {
     outline: 2px solid #a78bfa;
     outline-offset: 3px;
 }
+
+
+/* SmartSpend logo */
+.landing-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.landing-brand-mark {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: #70dfcc;
+    color: #050505;
+
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1;
+
+    border-radius: 13px;
+}
+
+.landing-brand-name {
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #ffffff;
+}
+
+/* Mobile logo adjustment */
+@media (max-width: 600px) {
+    .landing-brand-mark {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .landing-brand-name {
+        font-size: 21px;
+    }
+}

@@ -223,9 +223,9 @@ export default function LandingPage() {
 
             {/* Navigation */}
             <header className="landing-nav">
-                <Link to="/" className="landing-logo" onClick={closeMenu}>
-                    <span className="landing-logo-icon">S</span>
-                    <span>SmartSpend</span>
+                <Link to="/" className="landing-brand">
+                    <span className="landing-brand-mark">S</span>
+                    <span className="landing-brand-name">SmartSpend</span>
                 </Link>
 
                 <nav className="landing-nav-links" aria-label="Primary navigation">
